@@ -36,3 +36,22 @@
     transform: rotate(360deg);
   }
 }
+
+.associate-screen-wrapper {
+  margin: 20px 0;
+  margin-bottom: 20px;
+  padding: 30px 50px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.pdf {
+  flex: 1;
+}
+
+.form {
+  flex: 1;
+}

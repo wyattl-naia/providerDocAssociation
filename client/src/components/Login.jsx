@@ -1,52 +1,76 @@
-import React, {useState, useEffect} from 'react'
-import { Select } from 'antd'
-import axios from 'axios'
-import { Link } from 'react-router-dom'
+/***
+ * GHU-309
+ */
+import React, { Component } from "react";
+import { Link } from "react-router-dom";
+import Select from "react-select";
+import { Input } from "reactstrap";
+import axios from "axios";
 
-const Login = (props) => {
-  const [member, setMember] = useState("")
-  const [memberName,setMemberName] = useState("")
-  useEffect(() => {
-    axios.get("http://localhost:8000/api/data-team")
-      .then(res => {
-        let membersSelect = document.getElementById('members')
-        for (let a in membersSelect.options) { membersSelect.options.remove(0)}
-        for(let x of res.data){
-          membersSelect.options[membersSelect.options.length] = new Option(x.member_name,x.member_name)
-        }
-        setMemberName(membersSelect.options[ membersSelect.selectedIndex ].value)
-      })
-      .catch(err => console.log(err))
-    
-  });
+class AssociateScreenLogin extends Component {
+  constructor(props) {
+    super(props);
 
-  const handleSubmit = (e) =>{
-    console.log(e)
-    const newMember = {
-      member_name: member
+    this.state = {
+      member: "",
+      memberName: "",
+      memberOptions: [],
+    };
+  }
+
+  async componentDidMount() {
+    this.refreshTeamMemberList();
+  }
+
+  async refreshTeamMemberList() {
+    try {
+      axios.get("http://localhost:8000/api/data-team").then((res) => {
+        const memberOptions = res.data.map((member) => {
+          return { value: member._id, label: member.member_name };
+        });
+
+        this.setState({ memberOptions: memberOptions });
+      });
+    } catch (error) {
+      console.log(error);
     }
-    axios.post("http://localhost:8000/api/data-team", newMember)
-      .then(res => {
-        console.log(res.data);
-        console.log("Sucess :)")
-      })
-      .catch(err => {
-        console.log(err)
-        console.log("Failure ;-;")
-      })
-  };
-  return (
-    <div>
-      <form onSubmit={handleSubmit}>
-        <input type="text" onChange={(e) => setMember(e.target.value)} value={member}/>
-        <button>Add Data Team Member</button>
-      </form>
-      <select name="members" id="members">
+  }
 
-      </select>
-      <Link to={"/main"} state={{member: memberName}} ><button>Login</button></Link>
-    </div>
-  )
+  handleSubmit = async (e) => {
+    const newMember = {
+      member_name: this.state.memberName,
+    };
+    try {
+      axios
+        .post("http://localhost:8000/api/data-team", newMember)
+        .then((res) => {
+          this.refreshTeamMemberList();
+        });
+    } catch (error) {
+      console.log("!!! handleSubmit error", error);
+    }
+  };
+
+  render() {
+    return (
+      <div>
+        <Input
+          onChange={(e) => this.setState({ memberName: e.target.value })}
+        ></Input>
+        <button onClick={this.handleSubmit}>Add Data Team Member</button>
+        <Select
+          onChange={(value, e) => {
+            this.setState({ member: value });
+          }}
+          options={this.state.memberOptions}
+          value={this.state.member}
+        />
+        <Link to={"/main"} state={{ member: this.state.member }}>
+          <button>Login</button>
+        </Link>
+      </div>
+    );
+  }
 }
 
-export default Login
+export default AssociateScreenLogin;
